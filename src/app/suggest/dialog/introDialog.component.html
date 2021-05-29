@@ -1,0 +1,11 @@
+<h3 style='font-family:標楷體;' mat-dialog-title>{{title}}</h3>
+
+<mat-dialog-content class="mat-typography">
+  <p [innerHtml]="introData.subsIntro"></p>
+  <p *ngIf="introData.subsIntroRef!=''">節錄自：<a href="{{introData.subsIntroRef}}" target="_blank">
+    {{introData.refAgency}} {{introData.subsIntroRef}}</a></p>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close>關閉</button>
+</mat-dialog-actions>

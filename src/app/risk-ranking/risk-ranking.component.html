@@ -1,0 +1,150 @@
+<section class="section bg-light block-11">
+  <div class="container">
+
+    <div class="card">
+      <div class="card-body">
+        <form [formGroup]="searchForm" (ngSubmit)="searchClick()">
+          <div align="center" class="row justify-content-center">
+            <div class="col-md-4 form-group">
+              <h5>欲排序的物質類別</h5>
+            </div>
+          </div>
+          <div class="row justify-content-center mb-8">
+            <div class="col-md-4 form-group">
+              <select class="form-control" [ngClass]="{'is-invalid': submitted && f.subs1select.errors }"
+                      formControlName="subs1select">
+                <option value=''>請選擇</option>
+                <option *ngFor="let item of (rank1 | keyvalue: valueAscOrder)"
+                        value="{{item.key}}">{{item.value}}
+                </option>
+              </select>
+              <div *ngIf="submitted && f.subs1select.errors" class="invalid-feedback">
+                <div *ngIf="f.subs1select.errors.required">必選</div>
+              </div>
+            </div>
+            <div class="col-md-4 form-group" *ngIf="f.subs1select.value">
+              <select class="form-control" [ngClass]="{'is-invalid': submitted && f.subs2select.errors }"
+                      formControlName="subs2select">
+                <option value=''>全部</option>
+                <option *ngFor="let item of (rank2 | keyvalue: valueAscOrder | strFilter : 'key' : f.subs1select.value)"
+                        value="{{item.key}}">{{item.value}}
+                </option>
+              </select>
+              <div *ngIf="submitted && f.subs2select.errors" class="invalid-feedback">
+                <div *ngIf="f.subs2select.errors.required">必選</div>
+              </div>
+            </div>
+          </div>
+          <div *ngIf="noData" class="row justify-content-center mb-12">
+            <p class="text-danger">該分類尚無任何超標食品且無需風險排序</p>
+          </div>
+          <div class="row justify-content-center mb-6">
+            <button type="submit" class="btn btn-outline-secondary">查詢</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="row justify-content-center mb-5">
+      <mat-progress-spinner mode="indeterminate" color="accent" *ngIf="loading"></mat-progress-spinner>
+    </div>
+
+    <div id="accordion">
+      <div class="card" *ngIf="riskRankRsp && foodPassList && submitted">
+        <div class="card-header" id="headingTwo">
+          <h5 class="mb-0">
+            <button class="btn btn-link" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false"
+                    aria-controls="collapseTwo">
+              食品超標率排序
+            </button>
+          </h5>
+        </div>
+        <div id="collapseTwo" class="collapse show" aria-labelledby="headingTwo" data-parent="#accordion">
+          <div class="card-body">
+            <div class="no-more-tables">
+              <table class="table col-sm-12">
+                <thead class="thead-dark">
+                <tr>
+                  <th scope="col" class="text-nowrap">排名</th>
+                  <th scope="col" class="text-nowrap">食品名稱</th>
+                  <th scope="col" class="text-nowrap">物質名稱</th>
+                  <th scope="col" class="text-nowrap">英文名稱</th>
+                  <th scope="col" class="text-nowrap">超標率(%)</th>
+                  <th scope="col" class="text-nowrap">資料筆數</th>
+                  <th scope="col" class="text-nowrap">明細</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr *ngFor="let pass of foodPassList;let i = index">
+                  <td data-title="排名" scope="row">{{i+1}}</td>
+                  <td data-title="食品名稱">{{pass.FoodNameCh}}</td>
+                  <td data-title="物質名稱">{{pass.SubsNameCh}}</td>
+                  <td data-title="英文名稱">{{pass.SubsName}}</td>
+                  <td data-title="超標率(%)">{{pass.FailRate.toFixed(2)}}</td>
+                  <td data-title="資料筆數">{{pass.FoodConcList.length}}</td>
+                  <td data-title="明細">
+                    <button type="button" class="btn btn-light"
+                            (click)="passDetailClick(pass)">
+                      <img src="./assets/images/icon/introduction_32px.ico"/>
+                    </button>
+                  </td>
+                </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" *ngIf="riskRankRsp && scoreDetailList && submitted">
+        <div class="card-header" id="headingOne">
+          <h5 class="mb-0">
+            <button class="btn btn-link" data-toggle="collapse" data-target="#collapseOne" aria-expanded="false"
+                    aria-controls="collapseOne">
+              風險分級排序
+            </button>
+          </h5>
+        </div>
+        <div id="collapseOne" class="collapse" aria-labelledby="headingOne" data-parent="#accordion">
+          <div class="card-body">
+            <h5 class="card-text">分級參考：Chou, W. C., et al. (2019). "Prioritization of pesticides in crops with a
+              semi-quantitative risk ranking method for Taiwan postmarket monitoring program." J Food Drug Anal 27(1):
+              347-354.
+            </h5>
+            <p class="text-danger text-center">總分為 0 不顯示 ( 0 分是因為資料缺乏)</p>
+            <div class="no-more-tables">
+              <table class="table col-sm-12">
+                <thead class="thead-dark">
+                <tr>
+                  <th scope="col" class="text-nowrap">排名</th>
+                  <th scope="col" class="text-nowrap">物質名稱</th>
+                  <th scope="col" class="text-nowrap">英文名稱</th>
+                  <th scope="col" class="text-nowrap">A因子得分</th>
+                  <th scope="col" class="text-nowrap">B因子得分</th>
+                  <th scope="col" class="text-nowrap">C因子得分</th>
+                  <th scope="col" class="text-nowrap">D因子得分</th>
+                  <th scope="col" class="text-nowrap">總分</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr *ngFor="let score of scoreDetailList;let i = index">
+                  <td data-title="排名" scope="row">{{i+1}}</td>
+                  <td data-title="物質名稱">{{score.SubsNameCh}}</td>
+                  <td data-title="英文名稱">{{score.SubsName}}</td>
+                  <td data-title="A因子得分">{{score.ScoreA}}</td>
+                  <td data-title="B因子得分">{{score.ScoreB}}</td>
+                  <td data-title="C因子得分">{{score.ScoreC}}</td>
+                  <td data-title="D因子得分">{{score.ScoreD}}</td>
+                  <td data-title="總分">{{score.Total}}</td>
+                </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</section>

@@ -1,0 +1,32 @@
+<h3 style='font-family:標楷體;' mat-dialog-title>{{title}}</h3>
+
+<mat-dialog-content class="mat-typography">
+  <div class="no-more-tables">
+    <table class="table col-sm-12">
+      <thead class="thead-dark">
+      <tr>
+        <th scope="col" class="text-nowrap">檢測單位</th>
+        <th scope="col" class="text-nowrap">檢體編號</th>
+        <th scope="col" class="text-nowrap">濃度 (ppm, mg/kg)</th>
+        <th scope="col" class="text-nowrap">限量 (ppm, mg/kg)</th>
+        <th scope="col" class="text-nowrap">限量規範</th>
+        <th scope="col" class="text-nowrap">是否合格</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr *ngFor="let conc of foodPassConcList">
+        <td data-title="檢測單位">{{conc.ConcRef}}</td>
+        <td data-title="檢體編號">{{conc.Concid}}</td>
+        <td data-title="濃度 (ppm)">{{conc.DtConc}}</td>
+        <td data-title="限量 (ppm)">{{conc.Mrl}}</td>
+        <td data-title="限量規範">{{conc.MrlRef}}</td>
+        <td data-title="是否合格">{{conc.Pass}}</td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button mat-dialog-close>關閉</button>
+</mat-dialog-actions>

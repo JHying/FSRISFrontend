@@ -1,0 +1,31 @@
+<h3 style='font-family:標楷體;' mat-dialog-title>{{title}}</h3>
+
+<mat-dialog-content class="mat-typography">
+  <div class="no-more-tables">
+    <table class="table col-sm-12">
+      <thead class="thead-dark">
+      <tr>
+        <th scope="col" class="text-nowrap">檢測單位</th>
+        <th scope="col" class="text-nowrap">檢體編號</th>
+        <th scope="col" class="text-nowrap">物質</th>
+        <th scope="col" class="text-nowrap">濃度 (ppm, mg/kg)</th>
+        <th scope="col" class="text-nowrap">檢測時間</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr *ngFor="let conc of concList">
+        <td data-title="檢測單位">{{conc.ConcRef}}</td>
+        <td data-title="檢體編號">{{conc.Concid}}</td>
+        <td data-title="物質">{{conc.SubsName}}</td>
+        <td data-title="濃度 (ppm)">{{conc.SubsConc}}</td>
+        <td data-title="檢測時間">{{conc.ConcDTtime}}</td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <!--<button class="mat-raised-button mat-primary" (click)="confirm()">確認</button>-->
+  <button mat-button mat-dialog-close>關閉</button>
+</mat-dialog-actions>

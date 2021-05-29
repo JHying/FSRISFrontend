@@ -1,0 +1,317 @@
+<section class="section">
+  <div class="container">
+    <div class="card">
+      <div class="card-body">
+        <form [formGroup]="searchForm" (ngSubmit)="searchClick()">
+
+          <div class="row justify-content-center mb-8">
+            <div class="col-md-3 form-group">
+              <h5>請輸入您的體重（公斤）</h5>
+              <input type="text" class="form-control text-center"
+                     [ngClass]="{'is-invalid': submitted && f.weight.errors }" formControlName="weight">
+              <div *ngIf="submitted && f.weight.errors" class="invalid-feedback">
+                <div *ngIf="f.weight.errors.required">必填</div>
+              </div>
+              <div *ngIf="submitted && f.weight.errors" class="invalid-feedback">
+                <div *ngIf="f.weight.errors.pattern">請輸入整數或小數</div>
+              </div>
+            </div>
+          </div>
+          <div class="row justify-content-center mb-8">
+            <div class="col-md-12 form-group">
+              <h5>想查詢的食品</h5>
+            </div>
+            <div class="col-md-3 form-group">
+              <select class="form-control" [ngClass]="{'is-invalid': submitted && f.food1select.errors}"
+                      formControlName="food1select">
+                <!--<option value="">請選擇</option>-->
+                <option *ngFor="let item of (food1 | keyvalue)" [ngValue]="item.key">{{item.value}}</option>
+              </select>
+              <div *ngIf="submitted && f.food1select.errors" class="invalid-feedback">
+                <div *ngIf="f.food1select.errors.required">必選</div>
+              </div>
+            </div>
+            <div class="col-md-3 form-group" *ngIf="f.food1select.value">
+              <select class="form-control" [ngClass]="{'is-invalid': submitted && f.food2select.errors }"
+                      formControlName="food2select">
+                <option value="">請選擇</option>
+                <option *ngFor="let item of (food2 | keyvalue | strFilter : 'key' : f.food1select.value)"
+                        [ngValue]="item.key">{{item.value}}
+                </option>
+              </select>
+              <div *ngIf="submitted && f.food2select.errors" class="invalid-feedback">
+                <div *ngIf="f.food2select.errors.required">必選</div>
+              </div>
+            </div>
+            <div class="col-md-3 form-group" *ngIf="f.food2select.value">
+              <select class="form-control" [ngClass]="{'is-invalid': submitted && f.food3select.errors }"
+                      formControlName="food3select" (change)="initFoodUnit()">
+                <option value="">請選擇</option>
+                <option *ngFor="let item of (food3 | keyvalue | strFilter : 'key' : f.food2select.value)"
+                        [ngValue]="item.key">{{item.value}}
+                </option>
+              </select>
+              <div *ngIf="submitted && f.food3select.errors" class="invalid-feedback">
+                <div *ngIf="f.food3select.errors.required">必選</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="row justify-content-center mb-8">
+            <div class="col-md-12 form-group">
+              <h5>請輸入您每天吃的量 (克)</h5>
+            </div>
+            <div class="col-md-12 form-group">
+              <p *ngIf="unitRsp.UnitDesc">{{unitRsp.UnitDesc}}</p>
+              <p>未填會用國人平均吃的量幫您評估每天吃的風險 (可填寫年齡、性別取得更適合您的攝食資料)</p>
+            </div>
+            <div class="col-md-3 form-group">
+              <input type="text" class="form-control text-center" placeholder="食品攝食量 (g)"
+                     [ngClass]="{'is-invalid': submitted && f.quant.errors }" formControlName="quant">
+              <div *ngIf="submitted && f.quant.errors" class="invalid-feedback">
+                <div *ngIf="f.quant.errors.pattern">請輸入整數或小數</div>
+              </div>
+            </div>
+            <div class="col-md-2 form-group">
+              <input type="text" class="form-control text-center" placeholder="年齡"
+                     [ngClass]="{'is-invalid': submitted && f.age.errors }" formControlName="age">
+              <div *ngIf="submitted && f.age.errors" class="invalid-feedback">
+                <div *ngIf="f.age.errors.pattern">請輸入整數</div>
+              </div>
+            </div>
+            <div class="col-md-2 form-group">
+              <select class="form-control"
+                      [ngClass]="{'is-invalid': submitted && f.gender.errors}" formControlName="gender">
+                <option value="W">不分性別</option>
+                <option value="M">男性</option>
+                <option value="F">女性</option>
+              </select>
+            </div>
+          </div>
+          <br>
+          <div class="row justify-content-center mb-12" *ngIf="noSubs">
+            <p class="text-danger">目前沒有任何物質被檢出，請安心食用</p>
+          </div>
+          <div class="row justify-content-center mb-6">
+            <button type="submit" class="btn btn-outline-secondary">查詢</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="row justify-content-center mb-5">
+      <mat-progress-spinner mode="indeterminate" color="accent" *ngIf="loading"></mat-progress-spinner>
+    </div>
+
+    <div id="recDiv">
+      <div class="row justify-content-center mb-8"
+           *ngIf="recRsp.FoodIntakeCommmend && recRsp.SubsClasses && submitted">
+        <div class="col-md-8 text-center">
+          <h3>您好：</h3>
+          <h4>根據最新「{{food3choosed}}」檢驗結果計算</h4>
+          <h4>建議您「{{food3choosed}}」每天攝食量 -- 不超過 {{recRsp.FoodIntakeCommmend.IntakeCommmend.toFixed(2)}} 克</h4>
+          <br>
+          <p>此建議是根據「{{food3choosed}}」中「{{recSubs}}」的風險資訊而定</p>
+          <p>為何是{{food3choosed}}中的{{recSubs}}？</p>
+          <p>因為在{{food3choosed}}的所有可能殘留物質中，{{recSubs}} 的風險最值得注意哦！</p>
+          <p class="text-danger">欲知詳情，請往下滑</p>
+        </div>
+      </div>
+      <div class="row justify-content-center mb-8"
+           *ngIf="!recRsp.FoodIntakeCommmend && recRsp.SubsClasses && submitted">
+        <div class="col-md-8 text-center">
+          <h3>您好：</h3>
+          <h4>尚無足夠資料可分析容許攝食量...</h4>
+          <p>以下提供食品殘留及其限量供您參考</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!--風險資訊-->
+<div id="riskDiv">
+  <section class="section bg-light" *ngIf="submitted && subsRiskRsp.SubsATDIRfD">
+    <div class="container">
+      <div class="row justify-content-center mb-8">
+        <div class="col-md-8 text-center">
+          <h3 class=" heading mb-4">「{{food3choosed}}」中的「{{subsChoosed}}」 - 風險資訊</h3>
+        </div>
+      </div>
+      <!-- 相關風險分析內容 -->
+      <div id="accordion">
+        <div class="card">
+          <div class="card-header" id="headingOne">
+            <h5 class="mb-0">
+              <button class="btn btn-link" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true"
+                      aria-controls="collapseOne">
+                容許攝食量怎麼來的
+              </button>
+            </h5>
+          </div>
+          <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordion">
+            <div class="card-body">
+              <h5 class="card-text">--- 計算結果來自 ---</h5>
+              <h5 class="card-text">{{subsChoosed}} 的「每人每公斤每日容許攝取量」 (簡稱：ADI/TDI/RfD)</h5>
+              <h5 class="card-text">意思是一公斤的人每天吃吃一輩子，最高可吃到多少{{subsChoosed}}，還是很安全的量</h5>
+              <h5 class="card-text">而根據您填的資料，{{food3choosed}}容許攝食量計算如下：</h5>
+              <br>
+              <p class="card-text">「{{subsChoosed}}」的每人每公斤每日容許攝取量 (ADI/TDI/RfD)：{{subsRiskRsp.SubsATDIRfD}}
+                mg/kg-day</p>
+              <p class="card-text">所以依照您的體重，「{{subsChoosed}}」您每天可以吃：
+                {{subsRiskRsp.SubsATDIRfD}} mg/kg-day × {{searchForm.value.weight}} kg = {{subsRiskRsp.SubsATDIRfD *
+                searchForm.value.weight}} mg/day</p>
+              <p class="card-text">再根據食品中「{{subsChoosed}}」的平均濃度，「{{food3choosed}}」您每天可以吃：
+                {{subsRiskRsp.SubsATDIRfD * searchForm.value.weight}} mg/day ÷ {{subsRiskRsp.ConcMean.toFixed(5)}} mg/kg
+                =
+                {{(subsRiskRsp.SubsATDIRfD * searchForm.value.weight/subsRiskRsp.ConcMean).toFixed(5)}} kg/day</p>
+              <p class="card-text">也就是每天要吃大約 {{subsRiskRsp.IntakeCommmend.toFixed(2)}} g
+                以上的{{food3choosed}}，才會超過對「{{subsChoosed}}」的每日容許攝取量</p>
+              <p class="text-danger">{{subsChoosed}} 的每人每公斤每日容許攝取量參考來源：{{subsRiskRsp.SubsATDIRfDRef}}</p>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header" id="headingTwo">
+            <h5 class="mb-0">
+              <button class="btn btn-link collapsed" data-toggle="collapse" data-target="#collapseTwo"
+                      aria-expanded="false" aria-controls="collapseTwo">
+                每天吃{{food3choosed}}的風險
+              </button>
+            </h5>
+          </div>
+          <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordion">
+            <div class="card-body" *ngIf="noRisk">
+              <br>
+              <h4>您每天吃的量 = 0 克 (或您選擇的族群在國人攝食調查中，不會接觸到此食品)</h4>
+              <br>
+              <h3>沒吃就不會有風險，請安心唷！</h3>
+              <br>
+            </div>
+            <div class="card-body" *ngIf="!noRisk">
+              <h5 class="card-text">此處以您填寫的資料</h5>
+              <h5 class="card-text">評估您天天吃{{subsRiskRsp.ConsumeMean.toFixed(2)}}克{{food3choosed}}吃一輩子，
+                從中吃到{{subsChoosed}}的風險</h5>
+              <p class="text-danger" *ngIf="searchForm.value.quant=='' && searchForm.value.age==''">
+                (說明：因您沒填年齡、攝食量，上面數值為全台灣您所選性別的平均攝食量)</p>
+              <p class="text-danger" *ngIf="searchForm.value.quant=='' && searchForm.value.age!==''">
+                (說明：因您沒填攝食量，上面數值為台灣{{searchForm.value.age}}歲您所選性別的平均攝食量)</p>
+              <p class="text-danger">結果如下 (指針為真實風險落點)</p>
+              <p class="card-text">結果包含真實風險 及 風險範圍</p>
+              <p>範圍下限說明：下限是「最真實情況的風險」 (以<u>市售食品的真實殘留</u>計算)</p>
+              <p>
+                範圍上限說明：上限是「在目前管制下，假設最差狀況的風險」 (假設食品殘留都<u>剛好是法規限量標準</u><span class="text-danger"
+                                                                           *ngIf="!subsRiskRsp.RegulationRisk">*</span>)
+              </p>
+              <p class="text-danger" *ngIf="!subsRiskRsp.RegulationRisk">
+                *註：抱歉...因目前還沒蒐集到限量標準，下圖無法評估上限唷...</p>
+              <div id="chartsDiv">
+                <fusioncharts
+                  type="angulargauge"
+                  width="100%"
+                  dataFormat="JSON"
+                  [dataSource]="personalRisk">
+                </fusioncharts>
+              </div>
+              <p class="text-black">上圖為「<b>每天都吃{{subsRiskRsp.ConsumeMean.toFixed(2)}}克</b>」的風險</p>
+              <p class="text-black">落於綠色完全不用擔心；黃色安全；紅色建議酌量攝取哦。</p>
+              <br>
+              <!--<button type="button" class="btn btn-link">點我看詳細評估過程</button>-->
+            </div>
+          </div>
+        </div>
+      </div>
+      <br>
+      <p class="text-danger" align="center">欲知{{food3choosed}}中其他殘留物質的詳細資訊，請繼續往下</p>
+    </div>
+  </section>
+</div>
+
+<!--殘留物質-->
+<section class="section" *ngIf="submitted && recRsp.SubsClasses">
+  <div class="container">
+    <div>
+      <div class="row justify-content-center mb-8">
+        <div class="col-md-8 text-center">
+          <h3 class=" heading mb-4">{{food3choosed}} - 可能的殘留物質</h3>
+          <p>說明：殘留為環境或製程所致 (非刻意添加且無法避免)，故規定殘留限量確保其安全性，作為對市售食品的把關</p>
+        </div>
+      </div>
+      <div class="row justify-content-center mb-12" *ngIf="noRisk">
+        <p class="text-danger">該物質資料尚不齊全，無法計算風險唷...</p>
+      </div>
+      <!-- 殘留物質 -->
+      <div class="card text-center" id="殘留物質" #tabs>
+        <div class="card-header">
+          <ul class="nav nav-tabs card-header-tabs">
+            <li class="nav-item" *ngFor="let subsClass of foodSubsList">
+              <a class="nav-link" href="#{{subsClass.SubsClassName}}"
+                 [ngClass]="{ 'active':subsTab===subsClass.SubsClassName}"
+                 (click)="clickActiveTab(subsTab, subsClass.SubsClassName)"
+                 data-toggle="tab">{{subsClass.SubsClassName}}</a>
+            </li>
+          </ul>
+        </div>
+
+        <div class="tab-content">
+          <div class="tab-pane card-body" *ngFor="let subsClass of foodSubsList"
+               id="{{subsClass.SubsClassName}}"
+               [ngClass]="{active:subsTab===subsClass.SubsClassName}">
+            <div class="no-more-tables">
+              <table class="table col-sm-12">
+                <thead class="thead-dark">
+                <tr>
+                  <th scope="col" class="text-nowrap">物質名稱</th>
+                  <th scope="col" class="text-nowrap">檢測數值 (ppm, mg/kg)</th>
+                  <th scope="col" class="text-nowrap">限量標準 (ppm, mg/kg)</th>
+                  <th scope="col" class="text-nowrap">風險</th>
+                  <th scope="col" class="text-nowrap">物質簡介</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr *ngFor="let subs of foodDetailList">
+                  <td data-title="物質名稱" scope="row">{{subs.SubsName}}</td>
+                  <td data-title="檢測數值 (ppm)">{{subs.SubsConc}}<br>(共 {{subs.ConcCount}} 筆檢測資料)</td>
+                  <td data-title="限量標準 (ppm)">
+                    {{subs.SubsMrl}}<br>({{subs.SubsMrlRef}},
+                    {{subs.MrlUpdateTime}}<span class="text-danger" *ngIf="subs.SubsMrl.includes('從缺')">*</span>)
+                  </td>
+                  <td data-title="風險">
+                    <button type="button" class="btn btn-light" (click)="riskClick(subs, 'riskDiv')">
+                      <img src="./assets/images/icon/risk_32px.ico"/>
+                    </button>
+                  </td>
+                  <td data-title="物質簡介">
+                    <button type="button" class="btn btn-light"
+                            (click)="introClick(subs)">
+                      <img src="./assets/images/icon/introduction_32px.ico"/>
+                    </button>
+                  </td>
+                </tr>
+                </tbody>
+              </table>
+            </div>
+            <br>
+            <p>
+              檢測數值：市售檢測濃度中的最大值 (資料筆數)
+            </p>
+            <p>
+              限量標準：最大殘留限量標準 (參考法規, 法規修訂時間)
+            </p>
+            <p class="text-danger" *ngIf="noMRL">*註：限量標準從缺，該時間為資料擷取時間</p>
+            <p>--- 看檢測明細請點下方 ---</p>
+            <button type="button" class="btn btn-link" (click)="concClick('')">全部</button>
+            <p>
+              <button *ngFor="let subs of foodDetailList"
+                      type="button" class="btn btn-link" (click)="concClick(subs.SubsName)">{{subs.SubsName}}
+              </button>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div><!--<div id="residueSubs">-->
+    <!-- END 殘留物質 -->
+
+  </div><!--container-->
+</section>
+<!-- END section -->
