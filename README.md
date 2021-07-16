@@ -1,31 +1,19 @@
 # Introduction
 
-We hope to provide not only information for the authority but also correct knowledge for the public.
+We hope to provide not only information for the authority but also correct knowledge for the public. A Client-Server model has been applied for the system, the client uses TypeScript framework called Angular. The service was coded based on Representational State Transfer, Java framework called Spring Boot and the database of MariaDB.
+
+# Analysis
+
+Developing from concentration data collected by New Taipei City's Department of Health, we integrated the relative maximum residue levels, toxicity research and the national food consumption in 2017. We used the ratio of exposure level to the acceptable daily intake level (%ADI/%TDI/HQ) as the estimation of risks, in which the exposure assessment was assumed to be lifelong exposure, calculating based on the average concentration, users' weights and food intakes. We use semi-quantitative risk ranking method for the risk prioritization.
+
+# Result
+
+1. Personal acceptable food consumption
+2. Introduction of toxic substances
+3. Relative regulations of toxic substances
+4. Personal lifelong exposure health risk
+5. Risk prioritization of toxic substances
 
 # EmployeeManagement
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 7.3.2.
-
-## Development server
-
-Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The app will automatically reload if you change any of the source files.
-
-## Code scaffolding
-
-Run `ng generate component component-name` to generate a new component. You can also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
-
-## Build
-
-Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory. Use the `--prod` flag for a production build.
-
-## Running unit tests
-
-Run `ng test` to execute the unit tests via [Karma](https://karma-runner.github.io).
-
-## Running end-to-end tests
-
-Run `ng e2e` to execute the end-to-end tests via [Protractor](http://www.protractortest.org/).
-
-## Further help
-
-To get more help on the Angular CLI use `ng help` or go check out the [Angular CLI README](https://github.com/angular/angular-cli/blob/master/README.md).
